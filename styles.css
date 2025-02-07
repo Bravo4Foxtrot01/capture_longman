@@ -1,16 +1,10 @@
 .screenshot-button {
-  position: absolute;
-  right: -30px;
-  top: 5px;
-  background: #0078D7;
-  color: white;
-  border: none;
-  padding: 5px 8px;
-  font-size: 14px;
-  cursor: pointer;
-  border-radius: 5px;
-}
-
-.screenshot-button:hover {
-  background: #005a9e;
+    background: #f8d347;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+    font-size: 16px;
+    position: absolute;
+    z-index: 1000;
+    margin-top: -25px;
 }

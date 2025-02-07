@@ -1,30 +1,22 @@
 {
   "manifest_version": 3,
-  "name": "Longman Definition Screenshot",
+  "name": "LDOCE Sense Screenshot",
   "version": "1.0",
-  "description": "在朗文在线字典的每个解释右侧添加截图按钮，点击后自动截取该解释的截图。",
-  "permissions": ["activeTab", "scripting"],
-  "host_permissions": [
-    "https://www.ldoceonline.com/*"
-  ],
+  "description": "在 LDOCE Online 网页上检测 Sense 标签，并提供截图功能。",
+  "permissions": ["activeTab", "scripting", "storage"],
+  "host_permissions": ["https://www.ldoceonline.com/*"],
   "background": {
     "service_worker": "background.js"
   },
   "content_scripts": [
     {
-      "matches": [
-        "https://www.ldoceonline.com/dictionary/*"
-      ],
-      "js": [
-        "html2canvas.js",
-        "content.js"
-      ],
-      "css": [
-        "styles.css"
-      ]
+      "matches": ["https://www.ldoceonline.com/*"],
+      "js": ["content.js"],
+      "css": ["styles.css"],
+      "run_at": "document_idle"
     }
   ],
   "action": {
-    "default_title": "朗文字典截图插件"
+    "default_popup": "screenshot.html"
   }
 }

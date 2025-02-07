@@ -1,53 +1,48 @@
-import html2canvas from 'html2canvas';
+console.log("LDOCE Sense Screenshot 插件已加载！");
+
+// 监听 DOM 变化
+const observer = new MutationObserver((mutationsList, observer) => {
+    for (let mutation of mutationsList) {
+        if (mutation.type === "childList" || mutation.type === "subtree") {
+            addScreenshotButtons();
+        }
+    }
+});
+
+// 观察整个 body
+observer.observe(document.body, { childList: true, subtree: true });
 
 function addScreenshotButtons() {
-    console.log("Adding screenshot buttons..."); // Adding debug log
-    const senseElements = document.querySelectorAll(".Sense");
-    console.log("Found sense elements:", senseElements.length); // Adding debug log
+    let senseElements = document.querySelectorAll("span.Sense");
+    console.log(`找到 ${senseElements.length} 个 Sense 标签`);
 
-    senseElements.forEach((sense) => {
-        // Check if the button is already added
-        if (!sense.querySelector('.screenshot-button')) {
-            let button = document.createElement("button");
-            button.className = "screenshot-button";
-            button.innerHTML = "📸";
-            button.title = "Capture this explanation";
+    senseElements.forEach(sense => {
+        if (sense.dataset.hasButton) return; // 避免重复添加按钮
+        sense.dataset.hasButton = "true";
 
-            sense.style.position = "relative";
-            sense.appendChild(button);
+        let button = document.createElement("button");
+        button.textContent = "📸";
+        button.style.position = "absolute";
+        button.style.left = sense.getBoundingClientRect().left + window.scrollX + "px";
+        button.style.top = sense.getBoundingClientRect().top + window.scrollY - 30 + "px";
+        button.style.background = "#ffcc00";
+        button.style.border = "1px solid #b38f00";
+        button.style.padding = "5px 10px";
+        button.style.cursor = "pointer";
+        button.style.zIndex = "1000";
 
-            button.addEventListener("click", async () => {
-                try {
-                    await captureElement(sense);
-                } catch (error) {
-                    console.error("Screenshot error:", error);
-                }
-            });
-        }
+        button.addEventListener("click", () => captureScreenshot());
+        document.body.appendChild(button);
     });
 }
 
-async function captureElement(element) {
-    try {
-        const canvas = await html2canvas(element, {
-            backgroundColor: "#fff",
-            scale: 2
-        });
-
-        if (!canvas || typeof canvas.toDataURL !== 'function') {
-            throw new Error("Invalid canvas object");
-        }
-
-        const image = canvas.toDataURL("image/png");
-
-        const index = Array.from(document.querySelectorAll('.Sense')).indexOf(element);
-        const link = document.createElement("a");
-        link.href = image;
-        link.download = `definition_screenshot_${index}.png`;
+function captureScreenshot() {
+    chrome.tabs.captureVisibleTab(null, { format: "png" }, (imgUrl) => {
+        let link = document.createElement("a");
+        link.href = imgUrl;
+        link.download = "screenshot.png";
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-    } catch (error) {
-        console.error("Screenshot error:", error);
-    }
+    });
 }
