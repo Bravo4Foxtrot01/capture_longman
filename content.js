@@ -23,6 +23,23 @@ const style = document.createElement('style');
 style.textContent = `
 .sense-hover {
     border: 1px solid red !important;
+}
+.screenshot-toast {
+    position: fixed;
+    background-color: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 4px;
+    z-index: 10000;
+    font-size: 14px;
+    animation: fadeInOut 2s ease-in-out;
+}
+
+@keyframes fadeInOut {
+    0% { opacity: 0; transform: translate(-50%, 20px); }
+    15% { opacity: 1; transform: translate(-50%, 0); }
+    85% { opacity: 1; transform: translate(-50%, 0); }
+    100% { opacity: 0; transform: translate(-50%, -20px); }
 }`;
 document.head.appendChild(style);
 
@@ -44,9 +61,22 @@ function handleMouseOut(event) {
 document.addEventListener("mouseover", handleMouseOver);
 document.addEventListener("mouseout", handleMouseOut);
 
-// 双击调用 CleanShot X 的功能保留
+// 添加 Toast 提示函数
+function showToast(message, x, y) {
+    const toast = document.createElement('div');
+    toast.className = 'screenshot-toast';
+    toast.textContent = message;
+    toast.style.left = `${x}px`;
+    toast.style.top = `${y}px`;
+    document.body.appendChild(toast);
+    setTimeout(() => {
+        document.body.removeChild(toast);
+    }, 2000);
+}
+
+// 双击调用 CleanShot X 的功能保留并添加 Toast 提示
 document.querySelectorAll("span.Sense").forEach(sense => {
-    sense.addEventListener("dblclick", () => {
+    sense.addEventListener("dblclick", (event) => {
         const rect = sense.getBoundingClientRect();
         const x = Math.round(rect.left + window.scrollX);
         const y = Math.round(rect.top + window.scrollY);
@@ -54,6 +84,10 @@ document.querySelectorAll("span.Sense").forEach(sense => {
         const height = Math.round(rect.height);
 
         const cleanshotUrl = `cleanshot://capture-area?x=${x}&y=${y}&width=${width}&height=${height}&action=copy`;
+
+        // 直接提示正在调用 CleanShot X 进行截图
+        showToast("正在调用 CleanShot X 进行截图...", event.clientX, event.clientY);
+
         window.location.href = cleanshotUrl;
     });
 });
