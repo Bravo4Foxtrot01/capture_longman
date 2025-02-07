@@ -10,10 +10,12 @@ const DICTIONARY_CONFIGS = {
     },
     'cambridge': {
         name: 'Cambridge Dictionary',
-        senseSelector: '.def-block, .ddef_block',
+        senseSelector: '.def-block.ddef_block',  // 更新为更精确的选择器
+        definitionSelector: '.def.ddef_d.db',    // 定义部分选择器
+        exampleSelector: '.examp.dexamp',        // 例句部分选择器
         containerPadding: {
-            x: 16,
-            y: 16
+            x: 12,
+            y: 8
         }
     },
     'collins': {
@@ -70,6 +72,31 @@ function initializeStyles() {
             85% { opacity: 1; transform: translateY(0); }
             100% { opacity: 0; transform: translateY(-10px); }
         }
+        
+        /* 剑桥词典特定样式 */
+        .cambridge-sense-hover {
+            border: 2px solid red !important;
+            background-color: rgba(255, 0, 0, 0.02) !important;
+            border-radius: 6px !important;
+            margin: 8px 0 !important;
+        }
+        
+        /* 剑桥词典定义和例句高亮 */
+        .cambridge-sense-hover .def.ddef_d.db {
+            padding: 8px 12px !important;
+            background-color: rgba(255, 0, 0, 0.03) !important;
+        }
+        
+        .cambridge-sense-hover .examp.dexamp {
+            padding: 4px 12px !important;
+            margin-top: 4px !important;
+            background-color: rgba(255, 0, 0, 0.01) !important;
+        }
+        
+        /* 确保词典网站的固有样式不会干扰我们的高亮效果 */
+        .cambridge-sense-hover * {
+            background-color: transparent !important;
+        }
     `;
     document.head.appendChild(style);
 }
@@ -85,17 +112,48 @@ function showToast(message) {
     }, 2000);
 }
 
+// 计算截图区域
+function calculateScreenshotArea(element, config) {
+    const rect = element.getBoundingClientRect();
+    // 获取所有内部的定义和例句元素
+    const defElements = element.querySelectorAll(config.definitionSelector);
+    const exampleElements = element.querySelectorAll(config.exampleSelector);
+
+    // 计算所有相关元素的总高度
+    let totalHeight = rect.height;
+    let maxWidth = rect.width;
+
+    const x = Math.round(rect.left + window.scrollX - config.containerPadding.x);
+    const y = Math.round(rect.top + window.scrollY - config.containerPadding.y);
+    const width = Math.round(maxWidth + (config.containerPadding.x * 2));
+    const height = Math.round(totalHeight + (config.containerPadding.y * 2));
+
+    return { x, y, width, height };
+}
+
 // 初始化事件监听
 function initializeEventListeners(config) {
     // 监听鼠标悬停
     document.addEventListener("mouseover", (event) => {
         const sense = event.target.closest(config.senseSelector);
-        if (sense) sense.classList.add("sense-hover");
+        if (sense) {
+            if (config.name === 'Cambridge Dictionary') {
+                sense.classList.add("cambridge-sense-hover");
+            } else {
+                sense.classList.add("sense-hover");
+            }
+        }
     });
 
     document.addEventListener("mouseout", (event) => {
         const sense = event.target.closest(config.senseSelector);
-        if (sense) sense.classList.remove("sense-hover");
+        if (sense) {
+            if (config.name === 'Cambridge Dictionary') {
+                sense.classList.remove("cambridge-sense-hover");
+            } else {
+                sense.classList.remove("sense-hover");
+            }
+        }
     });
 
     // 监听双击事件
@@ -103,18 +161,15 @@ function initializeEventListeners(config) {
         const sense = event.target.closest(config.senseSelector);
         if (!sense) return;
 
-        const rect = sense.getBoundingClientRect();
-        const x = Math.round(rect.left + window.scrollX - config.containerPadding.x);
-        const y = Math.round(rect.top + window.scrollY - config.containerPadding.y);
-        const width = Math.round(rect.width + (config.containerPadding.x * 2));
-        const height = Math.round(rect.height + (config.containerPadding.y * 2));
+        const { x, y, width, height } = calculateScreenshotArea(sense, config);
 
         // 构建 CleanShot URL
         const cleanshotUrl = `cleanshot://all-in-one?x=${x}&y=${y}&width=${width}&height=${height}&action=copy`;
-        
+
         console.log(`Screenshot params for ${config.name}:`, {
             x, y, width, height,
-            url: cleanshotUrl
+            url: cleanshotUrl,
+            element: sense
         });
 
         showToast(`正在调用 CleanShot X 截取 ${config.name} 词条...`);
