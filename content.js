@@ -22,9 +22,12 @@ function addScreenshotButtons() {
 
         let button = document.createElement("button");
         button.textContent = "📸";
+        // 获取目标元素的位置信息
+        const rect = sense.getBoundingClientRect();
+        // 设置按钮的位置在目标元素的右侧
         button.style.position = "absolute";
-        button.style.left = sense.getBoundingClientRect().left + window.scrollX + "px";
-        button.style.top = sense.getBoundingClientRect().top + window.scrollY - 30 + "px";
+        button.style.left = rect.right + window.scrollX + 5 + "px"; // 右侧偏移 5px
+        button.style.top = rect.top + window.scrollY + "px"; // 顶部对齐
         button.style.background = "#ffcc00";
         button.style.border = "1px solid #b38f00";
         button.style.padding = "5px 10px";
@@ -34,6 +37,10 @@ function addScreenshotButtons() {
         button.addEventListener("click", () => {
             // 发送消息给后台脚本请求截图
             chrome.runtime.sendMessage({ action: "captureScreenshot" }, (response) => {
+                if (chrome.runtime.lastError) {
+                    console.error('发送消息时出错:', chrome.runtime.lastError);
+                    return;
+                }
                 if (response && response.imgUrl) {
                     let link = document.createElement("a");
                     link.href = response.imgUrl;
