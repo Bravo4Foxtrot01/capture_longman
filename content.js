@@ -66,14 +66,27 @@ function showToast(message) {
 document.querySelectorAll("span.Sense").forEach(sense => {
     sense.addEventListener("dblclick", (event) => {
         const rect = sense.getBoundingClientRect();
-        const x = Math.round(rect.left + window.scrollX);
-        const y = Math.round(rect.top + window.scrollY);
-        const width = Math.round(rect.width);
-        const height = Math.round(rect.height);
+        const x = Math.round(rect.left + window.scrollX); // 基于页面的绝对坐标
+        const y = Math.round(rect.top + window.scrollY); // 基于页面的绝对坐标
+        const width = Math.round(rect.width + 2); // 加上左右边框
+        const height = Math.round(rect.height + 2); // 加上上下边框
+
+        // 打印红框的位置信息
+        console.log("红框位置信息:");
+        console.log("x:", x);
+        console.log("y:", y);
+        console.log("width:", width);
+        console.log("height:", height);
+        console.log("window.scrollX:", window.scrollX, "window.scrollY:", window.scrollY);
+        console.log("rect:", rect);
 
         const cleanshotUrl = `cleanshot://all-in-one?x=${x}&y=${y}&width=${width}&height=${height}&action=copy`;
 
-        // showToast("正在调用 CleanShot X 进行截图...");
+        // 打印 CleanShot 的参数
+        console.log("CleanShot 参数:");
+        console.log("cleanshotUrl:", cleanshotUrl);
+
+        showToast("正在调用 CleanShot X 进行截图...");
         window.location.href = cleanshotUrl;
     });
 });
