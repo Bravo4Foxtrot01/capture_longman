@@ -1,15 +1,17 @@
+import html2canvas from 'html2canvas';
+
 function addScreenshotButtons() {
-    console.log("Adding screenshot buttons..."); // 添加调试日志
+    console.log("Adding screenshot buttons..."); // Adding debug log
     const senseElements = document.querySelectorAll(".Sense");
-    console.log("Found sense elements:", senseElements.length); // 添加调试日志
+    console.log("Found sense elements:", senseElements.length); // Adding debug log
 
     senseElements.forEach((sense) => {
-        // 检查是否已经添加过按钮
+        // Check if the button is already added
         if (!sense.querySelector('.screenshot-button')) {
             let button = document.createElement("button");
             button.className = "screenshot-button";
             button.innerHTML = "📸";
-            button.title = "截取此解释";
+            button.title = "Capture this explanation";
 
             sense.style.position = "relative";
             sense.appendChild(button);
@@ -18,7 +20,7 @@ function addScreenshotButtons() {
                 try {
                     await captureElement(sense);
                 } catch (error) {
-                    console.error("截图出错:", error);
+                    console.error("Screenshot error:", error);
                 }
             });
         }
@@ -26,17 +28,26 @@ function addScreenshotButtons() {
 }
 
 async function captureElement(element) {
-    const canvas = await html2canvas(element, {
-        backgroundColor: "#fff",
-        scale: 2
-    });
-    const image = canvas.toDataURL("image/png");
+    try {
+        const canvas = await html2canvas(element, {
+            backgroundColor: "#fff",
+            scale: 2
+        });
 
-    const index = Array.from(document.querySelectorAll('.Sense')).indexOf(element);
-    const link = document.createElement("a");
-    link.href = image;
-    link.download = `definition_screenshot_${index}.png`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+        if (!canvas || typeof canvas.toDataURL !== 'function') {
+            throw new Error("Invalid canvas object");
+        }
+
+        const image = canvas.toDataURL("image/png");
+
+        const index = Array.from(document.querySelectorAll('.Sense')).indexOf(element);
+        const link = document.createElement("a");
+        link.href = image;
+        link.download = `definition_screenshot_${index}.png`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    } catch (error) {
+        console.error("Screenshot error:", error);
+    }
 }
