@@ -15,7 +15,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 let croppedDataUrl = canvas.toDataURL("image/png"); // 获取裁剪后的图片
 
-                showScreenshotPopup(croppedDataUrl); // 显示弹窗
+                // 立即显示弹窗
+                requestAnimationFrame(() => {
+                    showScreenshotPopup(croppedDataUrl);
+                });
             };
         }
     });
@@ -44,13 +47,41 @@ function showScreenshotPopup(imageSrc) {
         display: flex;
         flex-direction: column;
         align-items: center;
+        max-width: 95vw;
+        max-height: 95vh;
+        overflow: auto;
     `;
 
     // 添加截图图片
-    let img = document.createElement("img");
+    let img = new Image();
     img.src = imageSrc;
-    img.style.maxWidth = "90vw";
-    img.style.maxHeight = "70vh";
+    
+    // 图片加载完成后设置合适的尺寸
+    img.onload = function() {
+        const maxWidth = window.innerWidth * 0.9;  // 最大宽度为窗口的90%
+        const maxHeight = window.innerHeight * 0.8; // 最大高度为窗口的80%
+        
+        let imgWidth = img.width;
+        let imgHeight = img.height;
+        
+        // 如果图片尺寸超过最大限制，按比例缩放
+        if (imgWidth > maxWidth) {
+            const ratio = maxWidth / imgWidth;
+            imgWidth = maxWidth;
+            imgHeight = imgHeight * ratio;
+        }
+        
+        if (imgHeight > maxHeight) {
+            const ratio = maxHeight / imgHeight;
+            imgHeight = maxHeight;
+            imgWidth = imgWidth * ratio;
+        }
+        
+        img.style.width = `${imgWidth}px`;
+        img.style.height = `${imgHeight}px`;
+    };
+    
+    img.style.display = 'block';
     img.style.border = "1px solid #ddd";
 
     // 创建按钮
