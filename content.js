@@ -71,7 +71,7 @@ document.querySelectorAll("span.Sense").forEach(sense => {
         const width = Math.round(rect.width);
         const height = Math.round(rect.height);
 
-        const cleanshotUrl = `cleanshot://capture-area?x=${x}&y=${y}&width=${width}&height=${height}&action=copy`;
+        const cleanshotUrl = `cleanshot://all-in-one?x=${x}&y=${y}&width=${width}&height=${height}&action=copy`;
 
         showToast("正在调用 CleanShot X 进行截图...");
         window.location.href = cleanshotUrl;
