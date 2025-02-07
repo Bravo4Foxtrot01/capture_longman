@@ -7,3 +7,12 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         });
     }
 });
+
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    if (request.action === "captureScreenshot") {
+        chrome.tabs.captureVisibleTab(null, { format: "png" }, (imgUrl) => {
+            sendResponse({ imgUrl: imgUrl });
+        });
+        return true; // 保持消息通道开启，直到 sendResponse 被调用
+    }
+});

@@ -31,18 +31,19 @@ function addScreenshotButtons() {
         button.style.cursor = "pointer";
         button.style.zIndex = "1000";
 
-        button.addEventListener("click", () => captureScreenshot());
+        button.addEventListener("click", () => {
+            // 发送消息给后台脚本请求截图
+            chrome.runtime.sendMessage({ action: "captureScreenshot" }, (response) => {
+                if (response && response.imgUrl) {
+                    let link = document.createElement("a");
+                    link.href = response.imgUrl;
+                    link.download = "screenshot.png";
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                }
+            });
+        });
         document.body.appendChild(button);
-    });
-}
-
-function captureScreenshot() {
-    chrome.tabs.captureVisibleTab(null, { format: "png" }, (imgUrl) => {
-        let link = document.createElement("a");
-        link.href = imgUrl;
-        link.download = "screenshot.png";
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
     });
 }
