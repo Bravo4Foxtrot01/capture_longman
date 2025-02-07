@@ -32,24 +32,11 @@ async function captureElement(element) {
     });
     const image = canvas.toDataURL("image/png");
 
+    const index = Array.from(document.querySelectorAll('.Sense')).indexOf(element);
     const link = document.createElement("a");
     link.href = image;
-    link.download = "definition_screenshot.png";
+    link.download = `definition_screenshot_${index}.png`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
 }
-
-// 使用 MutationObserver 监听 DOM 变化
-const observer = new MutationObserver((mutations) => {
-    addScreenshotButtons();
-});
-
-// 开始观察
-observer.observe(document.body, {
-    childList: true,
-    subtree: true
-});
-
-// 初始运行一次
-addScreenshotButtons();
