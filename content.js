@@ -1,58 +1,80 @@
-console.log("LDOCE Sense Screenshot 插件已加载！");
-
-const observer = new MutationObserver((mutationsList) => {
-    let needsUpdate = false;
-
-    for (let mutation of mutationsList) {
-        if (mutation.type === "childList" || mutation.type === "subtree") {
-            needsUpdate = true;
-            break;
+// 定义支持的词典配置
+const DICTIONARY_CONFIGS = {
+    'ldoce': {
+        name: 'Longman Dictionary',
+        senseSelector: 'span.Sense',
+        containerPadding: {
+            x: 16,
+            y: 16
+        }
+    },
+    'cambridge': {
+        name: 'Cambridge Dictionary',
+        senseSelector: '.def-block, .ddef_block',
+        containerPadding: {
+            x: 16,
+            y: 16
+        }
+    },
+    'collins': {
+        name: 'Collins Dictionary',
+        senseSelector: '.def, .hom',
+        containerPadding: {
+            x: 16,
+            y: 16
+        }
+    },
+    'oxford': {
+        name: 'Oxford Dictionary',
+        senseSelector: '.sense, .gramb',
+        containerPadding: {
+            x: 16,
+            y: 16
         }
     }
+};
 
-    if (needsUpdate) {
-        // 可根据需要添加逻辑
-    }
-});
-
-observer.observe(document.body, { childList: true, subtree: true });
-
-const style = document.createElement('style');
-style.textContent = `
-.sense-hover {
-    border: 1px solid red !important;
-}
-.screenshot-toast {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    background-color: rgba(0, 0, 0, 0.8);
-    color: white;
-    padding: 10px 20px;
-    border-radius: 4px;
-    z-index: 10000;
-    font-size: 14px;
-    animation: fadeInOut 2s ease-in-out;
+// 检测当前页面属于哪个词典
+function detectDictionary() {
+    const hostname = window.location.hostname;
+    if (hostname.includes('ldoceonline')) return 'ldoce';
+    if (hostname.includes('dictionary.cambridge')) return 'cambridge';
+    if (hostname.includes('collinsdictionary')) return 'collins';
+    if (hostname.includes('oxford')) return 'oxford';
+    return null;
 }
 
-@keyframes fadeInOut {
-    0% { opacity: 0; transform: translateY(-10px); }
-    15% { opacity: 1; transform: translateY(0); }
-    85% { opacity: 1; transform: translateY(0); }
-    100% { opacity: 0; transform: translateY(-10px); }
-}`;
-document.head.appendChild(style);
+// 初始化样式
+function initializeStyles() {
+    const style = document.createElement('style');
+    style.textContent = `
+        .sense-hover {
+            border: 1px solid red !important;
+            background-color: rgba(255, 0, 0, 0.05) !important;
+        }
+        .screenshot-toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 4px;
+            z-index: 10000;
+            font-size: 14px;
+            animation: fadeInOut 2s ease-in-out;
+        }
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: translateY(-10px); }
+            15% { opacity: 1; transform: translateY(0); }
+            85% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(-10px); }
+        }
+    `;
+    document.head.appendChild(style);
+}
 
-document.addEventListener("mouseover", (event) => {
-    const sense = event.target.closest("span.Sense");
-    if (sense) sense.classList.add("sense-hover");
-});
-
-document.addEventListener("mouseout", (event) => {
-    const sense = event.target.closest("span.Sense");
-    if (sense) sense.classList.remove("sense-hover");
-});
-
+// 显示提示信息
 function showToast(message) {
     const toast = document.createElement('div');
     toast.className = 'screenshot-toast';
@@ -63,80 +85,69 @@ function showToast(message) {
     }, 2000);
 }
 
-document.querySelectorAll("span.Sense").forEach(sense => {
-    sense.addEventListener("dblclick", (event) => {
+// 初始化事件监听
+function initializeEventListeners(config) {
+    // 监听鼠标悬停
+    document.addEventListener("mouseover", (event) => {
+        const sense = event.target.closest(config.senseSelector);
+        if (sense) sense.classList.add("sense-hover");
+    });
+
+    document.addEventListener("mouseout", (event) => {
+        const sense = event.target.closest(config.senseSelector);
+        if (sense) sense.classList.remove("sense-hover");
+    });
+
+    // 监听双击事件
+    document.addEventListener("dblclick", (event) => {
+        const sense = event.target.closest(config.senseSelector);
+        if (!sense) return;
+
         const rect = sense.getBoundingClientRect();
-        // 调整坐标，让左上角向左上移动 16px
-        const x = Math.round(rect.left + window.scrollX - 16);
-        const y = Math.round(rect.top + window.scrollY - 16);
-        // 调整宽度和高度，让其在原来基础上各增加 32px（左右各 16px，上下各 16px）
-        const width = Math.round(rect.width + 20);
-        const height = Math.round(rect.height + 32);
+        const x = Math.round(rect.left + window.scrollX - config.containerPadding.x);
+        const y = Math.round(rect.top + window.scrollY - config.containerPadding.y);
+        const width = Math.round(rect.width + (config.containerPadding.x * 2));
+        const height = Math.round(rect.height + (config.containerPadding.y * 2));
 
-        // 打印红框的位置信息
-        console.log("红框位置信息:");
-        console.log("x:", x);
-        console.log("y:", y);
-        console.log("width:", width);
-        console.log("height:", height);
-        console.log("window.scrollX:", window.scrollX, "window.scrollY:", window.scrollY);
-        console.log("rect:", rect);
-
+        // 构建 CleanShot URL
         const cleanshotUrl = `cleanshot://all-in-one?x=${x}&y=${y}&width=${width}&height=${height}&action=copy`;
+        
+        console.log(`Screenshot params for ${config.name}:`, {
+            x, y, width, height,
+            url: cleanshotUrl
+        });
 
-        // 打印 CleanShot 的参数
-        console.log("CleanShot 参数:");
-        console.log("cleanshotUrl:", cleanshotUrl);
-
-        showToast("正在调用 CleanShot X 进行截图...");
+        showToast(`正在调用 CleanShot X 截取 ${config.name} 词条...`);
         window.location.href = cleanshotUrl;
     });
-});
+}
 
-function showSensePopup(content) {
-    let overlay = document.createElement("div");
-    overlay.style.cssText = `
-        position: fixed;
-        top: 0; left: 0; width: 100%; height: 100%;
-        background: rgba(0, 0, 0, 0.5);
-        display: flex; justify-content: center; align-items: center;
-        z-index: 10000;
-    `;
+// 主函数
+function initialize() {
+    const dictionaryType = detectDictionary();
+    if (!dictionaryType) {
+        console.log('未检测到支持的词典网站');
+        return;
+    }
 
-    let popup = document.createElement("div");
-    popup.style.cssText = `
-        background: white;
-        padding: 20px;
-        border-radius: 8px;
-        text-align: center;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-        max-width: 80%;
-        max-height: 80%;
-        overflow: auto;
-    `;
+    const config = DICTIONARY_CONFIGS[dictionaryType];
+    console.log(`检测到 ${config.name}，正在初始化...`);
 
-    let contentDiv = document.createElement("div");
-    contentDiv.innerHTML = content;
+    initializeStyles();
+    initializeEventListeners(config);
 
-    let closeButton = document.createElement("button");
-    closeButton.textContent = "关闭";
-    closeButton.style.cssText = `
-        margin-top: 15px;
-        padding: 10px 20px;
-        font-size: 16px;
-        border: none;
-        background: #007bff;
-        color: white;
-        border-radius: 5px;
-        cursor: pointer;
-    `;
-
-    closeButton.addEventListener("click", () => {
-        document.body.removeChild(overlay);
+    // 设置 MutationObserver 以处理动态加载的内容
+    const observer = new MutationObserver((mutationsList) => {
+        for (let mutation of mutationsList) {
+            if (mutation.type === "childList" || mutation.type === "subtree") {
+                // 可以在这里添加特定词典的动态内容处理逻辑
+                break;
+            }
+        }
     });
 
-    popup.appendChild(contentDiv);
-    popup.appendChild(closeButton);
-    overlay.appendChild(popup);
-    document.body.appendChild(overlay);
+    observer.observe(document.body, { childList: true, subtree: true });
 }
+
+// 启动应用
+initialize();
