@@ -137,18 +137,63 @@ function addScreenshotButtons() {
             });
         });
 
+        sense.addEventListener("dblclick", () => {
+            showSensePopup(sense.innerHTML);
+        });
+
         document.body.appendChild(button);
     });
 }
 
-function updateButtonPositions() {
-    const buttons = document.querySelectorAll(".screenshot-button");
-    buttons.forEach(button => {
-        const sense = button.previousElementSibling;
-        if (sense) {
-            const rect = sense.getBoundingClientRect();
-            button.style.left = `${rect.right + window.scrollX + 5}px`;
-            button.style.top = `${rect.top + window.scrollY}px`;
-        }
+function showSensePopup(content) {
+    // Create overlay
+    let overlay = document.createElement("div");
+    overlay.style.cssText = `
+        position: fixed;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex; justify-content: center; align-items: center;
+        z-index: 10000;
+    `;
+
+    // Create popup
+    let popup = document.createElement("div");
+    popup.style.cssText = `
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        text-align: center;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        max-width: 80%;
+        max-height: 80%;
+        overflow: auto;
+    `;
+
+    // Add content
+    let contentDiv = document.createElement("div");
+    contentDiv.innerHTML = content;
+
+    // Create close button
+    let closeButton = document.createElement("button");
+    closeButton.textContent = "关闭";
+    closeButton.style.cssText = `
+        margin-top: 15px;
+        padding: 10px 20px;
+        font-size: 16px;
+        border: none;
+        background: #007bff;
+        color: white;
+        border-radius: 5px;
+        cursor: pointer;
+    `;
+
+    closeButton.addEventListener("click", () => {
+        document.body.removeChild(overlay);
     });
+
+    // Assemble components
+    popup.appendChild(contentDiv);
+    popup.appendChild(closeButton);
+    overlay.appendChild(popup);
+    document.body.appendChild(overlay);
 }
