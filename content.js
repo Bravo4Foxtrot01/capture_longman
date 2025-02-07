@@ -73,7 +73,7 @@ document.querySelectorAll("span.Sense").forEach(sense => {
 
         const cleanshotUrl = `cleanshot://all-in-one?x=${x}&y=${y}&width=${width}&height=${height}&action=copy`;
 
-        showToast("正在调用 CleanShot X 进行截图...");
+        // showToast("正在调用 CleanShot X 进行截图...");
         window.location.href = cleanshotUrl;
     });
 });
