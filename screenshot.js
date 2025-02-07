@@ -13,18 +13,18 @@ document.addEventListener("DOMContentLoaded", function () {
                 canvas.height = height;
                 ctx.drawImage(tempImg, x, y, width, height, 0, 0, width, height);
 
-                let croppedDataUrl = canvas.toDataURL("image/png"); // 获取裁剪后的图片
+                let croppedDataUrl = canvas.toDataURL("image/png");
 
-                // 立即显示弹窗
-                requestAnimationFrame(() => {
+                // 确保DOM完全加载后再显示弹窗
+                setTimeout(() => {
                     showScreenshotPopup(croppedDataUrl);
-                });
+                }, 100);
             };
         }
     });
 });
 
-// **创建弹窗显示截图**
+// 创建弹窗显示截图
 function showScreenshotPopup(imageSrc) {
     // 创建遮罩层
     let overlay = document.createElement("div");
@@ -33,7 +33,7 @@ function showScreenshotPopup(imageSrc) {
         top: 0; left: 0; width: 100%; height: 100%;
         background: rgba(0, 0, 0, 0.5);
         display: flex; justify-content: center; align-items: center;
-        z-index: 10000;
+        z-index: 999999;
     `;
 
     // 创建弹窗
@@ -47,9 +47,10 @@ function showScreenshotPopup(imageSrc) {
         display: flex;
         flex-direction: column;
         align-items: center;
-        max-width: 95vw;
-        max-height: 95vh;
+        max-width: 90vw;
+        max-height: 90vh;
         overflow: auto;
+        position: relative;
     `;
 
     // 添加截图图片
@@ -58,31 +59,29 @@ function showScreenshotPopup(imageSrc) {
     
     // 图片加载完成后设置合适的尺寸
     img.onload = function() {
-        const maxWidth = window.innerWidth * 0.9;  // 最大宽度为窗口的90%
-        const maxHeight = window.innerHeight * 0.8; // 最大高度为窗口的80%
+        const maxWidth = Math.min(window.innerWidth * 0.8, width);  // 最大宽度为窗口的80%或原始宽度
+        const maxHeight = Math.min(window.innerHeight * 0.7, height); // 最大高度为窗口的70%或原始高度
         
-        let imgWidth = img.width;
-        let imgHeight = img.height;
+        let imgWidth = this.naturalWidth;
+        let imgHeight = this.naturalHeight;
         
-        // 如果图片尺寸超过最大限制，按比例缩放
-        if (imgWidth > maxWidth) {
-            const ratio = maxWidth / imgWidth;
-            imgWidth = maxWidth;
-            imgHeight = imgHeight * ratio;
-        }
+        // 保持原始比例进行缩放
+        const ratio = Math.min(maxWidth / imgWidth, maxHeight / imgHeight);
         
-        if (imgHeight > maxHeight) {
-            const ratio = maxHeight / imgHeight;
-            imgHeight = maxHeight;
-            imgWidth = imgWidth * ratio;
+        if (ratio < 1) {
+            imgWidth *= ratio;
+            imgHeight *= ratio;
         }
         
         img.style.width = `${imgWidth}px`;
         img.style.height = `${imgHeight}px`;
+        img.style.objectFit = 'contain';
     };
     
     img.style.display = 'block';
     img.style.border = "1px solid #ddd";
+    img.style.maxWidth = '100%';
+    img.style.maxHeight = '70vh';
 
     // 创建按钮
     let button = document.createElement("button");
@@ -100,15 +99,18 @@ function showScreenshotPopup(imageSrc) {
 
     button.addEventListener("click", async () => {
         await copyToClipboard(imageSrc);
-        document.body.removeChild(overlay); // 关闭弹窗
+        document.body.removeChild(overlay);
     });
 
-    // 监听回车键
+    // 监听回车键和ESC键
     document.addEventListener("keydown", async function handleKeyPress(event) {
         if (event.key === "Enter") {
             await copyToClipboard(imageSrc);
             document.body.removeChild(overlay);
-            document.removeEventListener("keydown", handleKeyPress); // 移除监听
+            document.removeEventListener("keydown", handleKeyPress);
+        } else if (event.key === "Escape") {
+            document.body.removeChild(overlay);
+            document.removeEventListener("keydown", handleKeyPress);
         }
     });
 
@@ -116,10 +118,18 @@ function showScreenshotPopup(imageSrc) {
     popup.appendChild(img);
     popup.appendChild(button);
     overlay.appendChild(popup);
-    document.body.appendChild(overlay);
+    
+    // 确保在DOM完全准备好后再添加弹窗
+    if (document.readyState === "complete") {
+        document.body.appendChild(overlay);
+    } else {
+        window.addEventListener('load', () => {
+            document.body.appendChild(overlay);
+        });
+    }
 }
 
-// **复制图片到剪贴板**
+// 复制图片到剪贴板
 async function copyToClipboard(imageSrc) {
     try {
         let response = await fetch(imageSrc);
