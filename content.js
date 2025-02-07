@@ -66,10 +66,12 @@ function showToast(message) {
 document.querySelectorAll("span.Sense").forEach(sense => {
     sense.addEventListener("dblclick", (event) => {
         const rect = sense.getBoundingClientRect();
-        const x = Math.round(rect.left + window.scrollX); // 基于页面的绝对坐标
-        const y = Math.round(rect.top + window.scrollY); // 基于页面的绝对坐标
-        const width = Math.round(rect.width + 2); // 加上左右边框
-        const height = Math.round(rect.height + 2); // 加上上下边框
+        // 调整坐标，让左上角向左上移动 16px
+        const x = Math.round(rect.left + window.scrollX - 16);
+        const y = Math.round(rect.top + window.scrollY - 16);
+        // 调整宽度和高度，让其在原来基础上各增加 32px（左右各 16px，上下各 16px）
+        const width = Math.round(rect.width + 20);
+        const height = Math.round(rect.height + 32);
 
         // 打印红框的位置信息
         console.log("红框位置信息:");
