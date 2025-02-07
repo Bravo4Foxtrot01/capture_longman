@@ -16,7 +16,7 @@
         "https://www.ldoceonline.com/dictionary/*"
       ],
       "js": [
-        "html2canvas.min.js",
+        "html2canvas.js",
         "content.js"
       ],
       "css": [
