@@ -17,7 +17,7 @@ const observer = new MutationObserver((mutationsList) => {
 });
 
 // 观察整个 body
-observer.observe(document.body, { childList: true, subtree: true });
+observer.observe(document.body, {childList: true, subtree: true});
 
 const style = document.createElement('style');
 style.textContent = `
@@ -120,7 +120,7 @@ function addScreenshotButtons() {
                 if (response && response.imgUrl) {
                     try {
                         const blob = response.imgBlob;
-                        const item = new ClipboardItem({ "image/png": blob });
+                        const item = new ClipboardItem({"image/png": blob});
                         await navigator.clipboard.write([item]);
                         showToast("截图已复制到剪贴板！");
                         const link = document.createElement("a");
@@ -138,7 +138,14 @@ function addScreenshotButtons() {
         });
 
         sense.addEventListener("dblclick", () => {
-            showSensePopup(sense.innerHTML);
+            const rect = sense.getBoundingClientRect();
+            const x = Math.round(rect.left + window.scrollX);
+            const y = Math.round(rect.top + window.scrollY);
+            const width = Math.round(rect.width);
+            const height = Math.round(rect.height);
+
+            const cleanshotUrl = `cleanshot://capture-area?x=${x}&y=${y}&width=${width}&height=${height}&action=copy`;
+            window.location.href = cleanshotUrl;
         });
 
         document.body.appendChild(button);
