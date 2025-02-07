@@ -1,6 +1,5 @@
 console.log("LDOCE Sense Screenshot 插件已加载！");
 
-// 监听 DOM 变化，保留是为了后续可能对鼠标悬停和双击功能更新做准备
 const observer = new MutationObserver((mutationsList) => {
     let needsUpdate = false;
 
@@ -12,11 +11,10 @@ const observer = new MutationObserver((mutationsList) => {
     }
 
     if (needsUpdate) {
-        // 这里不再调用 addScreenshotButtons，可根据需要添加其他逻辑
+        // 可根据需要添加逻辑
     }
 });
 
-// 观察整个 body
 observer.observe(document.body, { childList: true, subtree: true });
 
 const style = document.createElement('style');
@@ -26,6 +24,8 @@ style.textContent = `
 }
 .screenshot-toast {
     position: fixed;
+    top: 20px;
+    right: 20px;
     background-color: rgba(0, 0, 0, 0.8);
     color: white;
     padding: 10px 20px;
@@ -36,45 +36,33 @@ style.textContent = `
 }
 
 @keyframes fadeInOut {
-    0% { opacity: 0; transform: translate(-50%, 20px); }
-    15% { opacity: 1; transform: translate(-50%, 0); }
-    85% { opacity: 1; transform: translate(-50%, 0); }
-    100% { opacity: 0; transform: translate(-50%, -20px); }
+    0% { opacity: 0; transform: translateY(-10px); }
+    15% { opacity: 1; transform: translateY(0); }
+    85% { opacity: 1; transform: translateY(0); }
+    100% { opacity: 0; transform: translateY(-10px); }
 }`;
 document.head.appendChild(style);
 
-// 监听鼠标移动
-function handleMouseOver(event) {
+document.addEventListener("mouseover", (event) => {
     const sense = event.target.closest("span.Sense");
-    if (sense) {
-        sense.classList.add("sense-hover");
-    }
-}
+    if (sense) sense.classList.add("sense-hover");
+});
 
-function handleMouseOut(event) {
+document.addEventListener("mouseout", (event) => {
     const sense = event.target.closest("span.Sense");
-    if (sense) {
-        sense.classList.remove("sense-hover");
-    }
-}
+    if (sense) sense.classList.remove("sense-hover");
+});
 
-document.addEventListener("mouseover", handleMouseOver);
-document.addEventListener("mouseout", handleMouseOut);
-
-// 添加 Toast 提示函数
-function showToast(message, x, y) {
+function showToast(message) {
     const toast = document.createElement('div');
     toast.className = 'screenshot-toast';
     toast.textContent = message;
-    toast.style.left = `${x}px`;
-    toast.style.top = `${y}px`;
     document.body.appendChild(toast);
     setTimeout(() => {
         document.body.removeChild(toast);
     }, 2000);
 }
 
-// 双击调用 CleanShot X 的功能保留并添加 Toast 提示
 document.querySelectorAll("span.Sense").forEach(sense => {
     sense.addEventListener("dblclick", (event) => {
         const rect = sense.getBoundingClientRect();
@@ -85,15 +73,12 @@ document.querySelectorAll("span.Sense").forEach(sense => {
 
         const cleanshotUrl = `cleanshot://capture-area?x=${x}&y=${y}&width=${width}&height=${height}&action=copy`;
 
-        // 直接提示正在调用 CleanShot X 进行截图
-        showToast("正在调用 CleanShot X 进行截图...", event.clientX, event.clientY);
-
+        showToast("正在调用 CleanShot X 进行截图...");
         window.location.href = cleanshotUrl;
     });
 });
 
 function showSensePopup(content) {
-    // Create overlay
     let overlay = document.createElement("div");
     overlay.style.cssText = `
         position: fixed;
@@ -103,7 +88,6 @@ function showSensePopup(content) {
         z-index: 10000;
     `;
 
-    // Create popup
     let popup = document.createElement("div");
     popup.style.cssText = `
         background: white;
@@ -116,11 +100,9 @@ function showSensePopup(content) {
         overflow: auto;
     `;
 
-    // Add content
     let contentDiv = document.createElement("div");
     contentDiv.innerHTML = content;
 
-    // Create close button
     let closeButton = document.createElement("button");
     closeButton.textContent = "关闭";
     closeButton.style.cssText = `
@@ -138,7 +120,6 @@ function showSensePopup(content) {
         document.body.removeChild(overlay);
     });
 
-    // Assemble components
     popup.appendChild(contentDiv);
     popup.appendChild(closeButton);
     overlay.appendChild(popup);
