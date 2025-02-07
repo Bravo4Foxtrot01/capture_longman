@@ -7,7 +7,7 @@ const observer = new MutationObserver((mutationsList) => {
     for (let mutation of mutationsList) {
         if (mutation.type === "childList" || mutation.type === "subtree") {
             needsUpdate = true;
-            break; // 只需要检查一次
+            break;
         }
     }
 
@@ -40,8 +40,30 @@ style.textContent = `
     15% { opacity: 1; transform: translate(-50%, 0); }
     85% { opacity: 1; transform: translate(-50%, 0); }
     100% { opacity: 0; transform: translate(-50%, -20px); }
+}
+
+.sense-hover {
+    border: 1px solid red !important;
 }`;
 document.head.appendChild(style);
+
+// 监听鼠标移动
+function handleMouseOver(event) {
+    const sense = event.target.closest("span.Sense");
+    if (sense) {
+        sense.classList.add("sense-hover");
+    }
+}
+
+function handleMouseOut(event) {
+    const sense = event.target.closest("span.Sense");
+    if (sense) {
+        sense.classList.remove("sense-hover");
+    }
+}
+
+document.addEventListener("mouseover", handleMouseOver);
+document.addEventListener("mouseout", handleMouseOut);
 
 // 添加 Toast 提示函数
 function showToast(message) {
@@ -49,8 +71,6 @@ function showToast(message) {
     toast.className = 'screenshot-toast';
     toast.textContent = message;
     document.body.appendChild(toast);
-
-    // 2秒后移除 toast
     setTimeout(() => {
         document.body.removeChild(toast);
     }, 2000);
@@ -99,15 +119,10 @@ function addScreenshotButtons() {
                 }
                 if (response && response.imgUrl) {
                     try {
-                        // 复制到剪贴板
                         const blob = response.imgBlob;
                         const item = new ClipboardItem({ "image/png": blob });
                         await navigator.clipboard.write([item]);
-
-                        // 显示成功提示
                         showToast("截图已复制到剪贴板！");
-
-                        // 同时也下载图片
                         const link = document.createElement("a");
                         link.href = response.imgUrl;
                         link.download = "sense-screenshot.png";
