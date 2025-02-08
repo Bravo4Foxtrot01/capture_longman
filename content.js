@@ -55,9 +55,14 @@ const DICTIONARY_CONFIGS = {
     }
 };
 
-// 获取屏幕高度的辅助函数
-function getScreenHeight() {
-    return window.screen.height;
+// 获取浏览器窗口信息的辅助函数
+function getWindowInfo() {
+    return {
+        width: window.innerWidth,
+        height: window.innerHeight,
+        left: window.screenX,
+        top: window.screenY
+    };
 }
 
 function detectDictionary() {
@@ -140,16 +145,7 @@ function calculateScreenshotArea(element, config) {
     let totalHeight = rect.height;
     let maxWidth = rect.width;
 
-    // 计算水平位置
-    const x = Math.round(rect.left + window.scrollX - config.containerPadding.x);
-
-    // 计算期望的垂直位置（从屏幕底部向上三分之二处）
-    const screenHeight = getScreenHeight();
-    const targetY = Math.round(screenHeight * (1/2)); // 从底部向上三分之二的位置
-
-    // 最终的y坐标需要从底部开始计算，因为CleanShot的坐标系统原点在左下角
-    const y = screenHeight - targetY;
-
+    // 添加内边距
     let width = Math.round(maxWidth + (config.containerPadding.x * 2));
     let height = Math.round(totalHeight + (config.containerPadding.y * 2));
 
@@ -158,7 +154,31 @@ function calculateScreenshotArea(element, config) {
         width = Math.round(width * 1.25);
     }
 
-    return {x, y, width, height};
+    // 获取浏览器窗口信息
+    const windowInfo = getWindowInfo();
+
+    // 计算窗口在屏幕上的中心点
+    const browserCenterX = windowInfo.left + (windowInfo.width / 2);
+    const browserCenterY = windowInfo.top + (windowInfo.height / 2);
+
+    // 计算截图框的左上角坐标，使其居中
+    // 注意：由于 CleanShot 使用左下角作为原点，需要转换 Y 坐标
+    const x = Math.round(browserCenterX - (width / 2));
+    const y = Math.round(window.screen.height - (browserCenterY + (height / 2)));
+
+    return {
+        x,
+        y,
+        width,
+        height,
+        debug: {
+            browserWindow: windowInfo,
+            calculatedCenter: {
+                x: browserCenterX,
+                y: browserCenterY
+            }
+        }
+    };
 }
 
 function initializeEventListeners(config) {
@@ -188,7 +208,7 @@ function initializeEventListeners(config) {
         const sense = event.target.closest(config.senseSelector);
         if (!sense) return;
 
-        const {x, y, width, height} = calculateScreenshotArea(sense, config);
+        const {x, y, width, height, debug} = calculateScreenshotArea(sense, config);
 
         const cleanshotUrl = `cleanshot://all-in-one?x=${x}&y=${y}&width=${width}&height=${height}&action=copy`;
 
@@ -196,7 +216,7 @@ function initializeEventListeners(config) {
             x, y, width, height,
             url: cleanshotUrl,
             element: sense,
-            screenHeight: getScreenHeight()
+            debugInfo: debug
         });
 
         showToast(`正在调用 CleanShot X 截取 ${config.name} 词条...`);
