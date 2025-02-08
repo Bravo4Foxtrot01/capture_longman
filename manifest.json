@@ -19,7 +19,9 @@
     {
       "matches": [
         "https://www.ldoceonline.com/*",
-        "https://dictionary.cambridge.org/*"
+        "https://dictionary.cambridge.org/*",
+        "https://www.oxfordlearnersdictionaries.com/*",
+        "https://www.collinsdictionary.com/dictionary/english/*"
       ],
       "js": [
         "content.js"

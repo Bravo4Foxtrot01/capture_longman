@@ -20,10 +20,12 @@ const DICTIONARY_CONFIGS = {
     },
     'collins': {
         name: 'Collins Dictionary',
-        senseSelector: '.def, .hom',
+        senseSelector: 'div.sense',  // 适配新的结构
+        definitionSelector: 'div.def',  // 定义部分选择器
+        exampleSelector: 'span.cit.quote',  // 例句部分选择器
         containerPadding: {
-            x: 16,
-            y: 16
+            x: 0,
+            y: 0
         }
     },
     'oxford': {
@@ -129,7 +131,7 @@ function calculateScreenshotArea(element, config) {
         width = Math.round(width * 1.25);
     }
 
-    return { x, y, width, height };
+    return {x, y, width, height};
 }
 
 // 初始化事件监听
@@ -162,7 +164,12 @@ function initializeEventListeners(config) {
         const sense = event.target.closest(config.senseSelector);
         if (!sense) return;
 
-        const { x, y, width, height } = calculateScreenshotArea(sense, config);
+        const {
+            x,
+            y,
+            width,
+            height
+        } = calculateScreenshotArea(sense, config);
 
         // 构建 CleanShot URL
         const cleanshotUrl = `cleanshot://all-in-one?x=${x}&y=${y}&width=${width}&height=${height}&action=copy`;
@@ -202,7 +209,7 @@ function initialize() {
         }
     });
 
-    observer.observe(document.body, { childList: true, subtree: true });
+    observer.observe(document.body, {childList: true, subtree: true});
 }
 
 // 启动应用
