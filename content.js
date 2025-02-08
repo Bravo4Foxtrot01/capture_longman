@@ -35,6 +35,13 @@ const DICTIONARY_CONFIGS = {
             x: 16,
             y: 16
         }
+    },
+    'merriam': {  // **新增韦氏词典支持**
+        name: 'Merriam-Webster Dictionary',
+        senseSelector: 'div.sense.has-sn',   // 选中具体释义块
+        definitionSelector: 'span.dtText',   // 选中定义文本
+        exampleSelector: '',   // 韦氏示例句结构不明确，暂时留空
+        containerPadding: {x: 8, y: 8}
     }
 };
 
@@ -45,6 +52,7 @@ function detectDictionary() {
     if (hostname.includes('dictionary.cambridge')) return 'cambridge';
     if (hostname.includes('collinsdictionary')) return 'collins';
     if (hostname.includes('oxford')) return 'oxford';
+    if (hostname.includes('merriam-webster')) return 'merriam';  // **新增韦氏词典检测**
     return null;
 }
 

@@ -21,7 +21,8 @@
         "https://www.ldoceonline.com/*",
         "https://dictionary.cambridge.org/*",
         "https://www.oxfordlearnersdictionaries.com/*",
-        "https://www.collinsdictionary.com/dictionary/english/*"
+        "https://www.collinsdictionary.com/dictionary/english/*",
+        "https://www.merriam-webster.com/dictionary/*"
       ],
       "js": [
         "content.js"
