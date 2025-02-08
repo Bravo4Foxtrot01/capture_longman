@@ -22,7 +22,8 @@
         "https://dictionary.cambridge.org/*",
         "https://www.oxfordlearnersdictionaries.com/*",
         "https://www.collinsdictionary.com/dictionary/english/*",
-        "https://www.merriam-webster.com/dictionary/*"
+        "https://www.merriam-webster.com/dictionary/*",
+        "https://www.urbandictionary.com/define.php*"
       ],
       "js": [
         "content.js"

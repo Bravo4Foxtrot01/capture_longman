@@ -42,20 +42,31 @@ const DICTIONARY_CONFIGS = {
         definitionSelector: 'span.dtText',   // 选中定义文本
         exampleSelector: '',   // 韦氏示例句结构不明确，暂时留空
         containerPadding: {x: 8, y: 8}
+    },
+    // **新增 Urban Dictionary 支持**
+    'urban': {
+        name: 'Urban Dictionary',
+        senseSelector: 'div.meaning',  // 释义选择器
+        definitionSelector: 'div.meaning',  // Urban 释义
+        exampleSelector: 'div.example',  // Urban 例句
+        containerPadding: {
+            x: 12,
+            y: 8
+        }
     }
 };
 
-// 检测当前页面属于哪个词典
+// 更新 `detectDictionary` 以识别 Urban Dictionary
 function detectDictionary() {
     const hostname = window.location.hostname;
     if (hostname.includes('ldoceonline')) return 'ldoce';
     if (hostname.includes('dictionary.cambridge')) return 'cambridge';
     if (hostname.includes('collinsdictionary')) return 'collins';
     if (hostname.includes('oxford')) return 'oxford';
-    if (hostname.includes('merriam-webster')) return 'merriam';  // **新增韦氏词典检测**
+    if (hostname.includes('merriam-webster')) return 'merriam';
+    if (hostname.includes('urbandictionary')) return 'urban';  // **新增 Urban 词典检测**
     return null;
 }
-
 // 初始化样式
 function initializeStyles() {
     const style = document.createElement('style');
