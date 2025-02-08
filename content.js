@@ -115,18 +115,19 @@ function showToast(message) {
 // 计算截图区域
 function calculateScreenshotArea(element, config) {
     const rect = element.getBoundingClientRect();
-    // 获取所有内部的定义和例句元素
-    const defElements = element.querySelectorAll(config.definitionSelector);
-    const exampleElements = element.querySelectorAll(config.exampleSelector);
-
-    // 计算所有相关元素的总高度
     let totalHeight = rect.height;
     let maxWidth = rect.width;
 
     const x = Math.round(rect.left + window.scrollX - config.containerPadding.x);
     const y = Math.round(rect.top + window.scrollY - config.containerPadding.y);
-    const width = Math.round(maxWidth + (config.containerPadding.x * 2));
-    const height = Math.round(totalHeight + (config.containerPadding.y * 2));
+
+    let width = Math.round(maxWidth + (config.containerPadding.x * 2));
+    let height = Math.round(totalHeight + (config.containerPadding.y * 2));
+
+    // 剑桥词典增加宽度 1.25 倍
+    if (config.name === 'Cambridge Dictionary') {
+        width = Math.round(width * 1.25);
+    }
 
     return { x, y, width, height };
 }
