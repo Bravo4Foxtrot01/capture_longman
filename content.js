@@ -10,9 +10,9 @@ const DICTIONARY_CONFIGS = {
     },
     'cambridge': {
         name: 'Cambridge Dictionary',
-        senseSelector: '.def-block.ddef_block',  // 更新为更精确的选择器
-        definitionSelector: '.def.ddef_d.db',    // 定义部分选择器
-        exampleSelector: '.examp.dexamp',        // 例句部分选择器
+        senseSelector: '.def-block.ddef_block',
+        definitionSelector: '.def.ddef_d.db',
+        exampleSelector: '.examp.dexamp',
         containerPadding: {
             x: 12,
             y: 8
@@ -20,9 +20,9 @@ const DICTIONARY_CONFIGS = {
     },
     'collins': {
         name: 'Collins Dictionary',
-        senseSelector: 'div.sense',  // 适配新的结构
-        definitionSelector: 'div.def',  // 定义部分选择器
-        exampleSelector: 'span.cit.quote',  // 例句部分选择器
+        senseSelector: 'div.sense',
+        definitionSelector: 'div.def',
+        exampleSelector: 'span.cit.quote',
         containerPadding: {
             x: 0,
             y: 0
@@ -36,19 +36,18 @@ const DICTIONARY_CONFIGS = {
             y: 16
         }
     },
-    'merriam': {  // **新增韦氏词典支持**
+    'merriam': {
         name: 'Merriam-Webster Dictionary',
-        senseSelector: 'div.sense.has-sn',   // 选中具体释义块
-        definitionSelector: 'span.dtText',   // 选中定义文本
-        exampleSelector: '',   // 韦氏示例句结构不明确，暂时留空
+        senseSelector: 'div.sense.has-sn',
+        definitionSelector: 'span.dtText',
+        exampleSelector: '',
         containerPadding: {x: 8, y: 8}
     },
-    // **新增 Urban Dictionary 支持**
     'urban': {
         name: 'Urban Dictionary',
-        senseSelector: 'div.meaning',  // 释义选择器
-        definitionSelector: 'div.meaning',  // Urban 释义
-        exampleSelector: 'div.example',  // Urban 例句
+        senseSelector: 'div.meaning',
+        definitionSelector: 'div.meaning',
+        exampleSelector: 'div.example',
         containerPadding: {
             x: 12,
             y: 8
@@ -56,7 +55,11 @@ const DICTIONARY_CONFIGS = {
     }
 };
 
-// 更新 `detectDictionary` 以识别 Urban Dictionary
+// 获取屏幕高度的辅助函数
+function getScreenHeight() {
+    return window.screen.height;
+}
+
 function detectDictionary() {
     const hostname = window.location.hostname;
     if (hostname.includes('ldoceonline')) return 'ldoce';
@@ -64,10 +67,10 @@ function detectDictionary() {
     if (hostname.includes('collinsdictionary')) return 'collins';
     if (hostname.includes('oxford')) return 'oxford';
     if (hostname.includes('merriam-webster')) return 'merriam';
-    if (hostname.includes('urbandictionary')) return 'urban';  // **新增 Urban 词典检测**
+    if (hostname.includes('urbandictionary')) return 'urban';
     return null;
 }
-// 初始化样式
+
 function initializeStyles() {
     const style = document.createElement('style');
     style.textContent = `
@@ -122,7 +125,6 @@ function initializeStyles() {
     document.head.appendChild(style);
 }
 
-// 显示提示信息
 function showToast(message) {
     const toast = document.createElement('div');
     toast.className = 'screenshot-toast';
@@ -133,14 +135,20 @@ function showToast(message) {
     }, 2000);
 }
 
-// 计算截图区域
 function calculateScreenshotArea(element, config) {
     const rect = element.getBoundingClientRect();
     let totalHeight = rect.height;
     let maxWidth = rect.width;
 
+    // 计算水平位置
     const x = Math.round(rect.left + window.scrollX - config.containerPadding.x);
-    const y = Math.round(rect.top + window.scrollY - config.containerPadding.y);
+
+    // 计算期望的垂直位置（从屏幕底部向上三分之二处）
+    const screenHeight = getScreenHeight();
+    const targetY = Math.round(screenHeight * (1/2)); // 从底部向上三分之二的位置
+
+    // 最终的y坐标需要从底部开始计算，因为CleanShot的坐标系统原点在左下角
+    const y = screenHeight - targetY;
 
     let width = Math.round(maxWidth + (config.containerPadding.x * 2));
     let height = Math.round(totalHeight + (config.containerPadding.y * 2));
@@ -153,9 +161,7 @@ function calculateScreenshotArea(element, config) {
     return {x, y, width, height};
 }
 
-// 初始化事件监听
 function initializeEventListeners(config) {
-    // 监听鼠标悬停
     document.addEventListener("mouseover", (event) => {
         const sense = event.target.closest(config.senseSelector);
         if (sense) {
@@ -178,25 +184,19 @@ function initializeEventListeners(config) {
         }
     });
 
-    // 监听双击事件
     document.addEventListener("dblclick", (event) => {
         const sense = event.target.closest(config.senseSelector);
         if (!sense) return;
 
-        const {
-            x,
-            y,
-            width,
-            height
-        } = calculateScreenshotArea(sense, config);
+        const {x, y, width, height} = calculateScreenshotArea(sense, config);
 
-        // 构建 CleanShot URL
         const cleanshotUrl = `cleanshot://all-in-one?x=${x}&y=${y}&width=${width}&height=${height}&action=copy`;
 
         console.log(`Screenshot params for ${config.name}:`, {
             x, y, width, height,
             url: cleanshotUrl,
-            element: sense
+            element: sense,
+            screenHeight: getScreenHeight()
         });
 
         showToast(`正在调用 CleanShot X 截取 ${config.name} 词条...`);
@@ -204,7 +204,6 @@ function initializeEventListeners(config) {
     });
 }
 
-// 主函数
 function initialize() {
     const dictionaryType = detectDictionary();
     if (!dictionaryType) {
@@ -218,11 +217,9 @@ function initialize() {
     initializeStyles();
     initializeEventListeners(config);
 
-    // 设置 MutationObserver 以处理动态加载的内容
     const observer = new MutationObserver((mutationsList) => {
         for (let mutation of mutationsList) {
             if (mutation.type === "childList" || mutation.type === "subtree") {
-                // 可以在这里添加特定词典的动态内容处理逻辑
                 break;
             }
         }
