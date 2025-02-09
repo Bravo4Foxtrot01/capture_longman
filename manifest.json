@@ -23,7 +23,8 @@
         "https://www.oxfordlearnersdictionaries.com/*",
         "https://www.collinsdictionary.com/dictionary/english/*",
         "https://www.merriam-webster.com/dictionary/*",
-        "https://www.urbandictionary.com/define.php*"
+        "https://www.urbandictionary.com/define.php*",
+        "https://idioms.thefreedictionary.com/*"
       ],
       "js": [
         "content.js"
