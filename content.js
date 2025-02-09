@@ -52,6 +52,16 @@ const DICTIONARY_CONFIGS = {
             x: 12,
             y: 8
         }
+    },
+    // 添加 Free Dictionary 支持
+    'freedictionary': {
+        name: 'Free Dictionary',
+        senseSelector: 'div.ds-list',
+        illustrationSelector: 'span.illustration',
+        containerPadding: {
+            x: 0,
+            y: 0
+        }
     }
 };
 
@@ -73,6 +83,7 @@ function detectDictionary() {
     if (hostname.includes('oxford')) return 'oxford';
     if (hostname.includes('merriam-webster')) return 'merriam';
     if (hostname.includes('urbandictionary')) return 'urban';
+    if (hostname.includes('thefreedictionary')) return 'freedictionary';
     return null;
 }
 
@@ -122,8 +133,25 @@ function initializeStyles() {
             background-color: rgba(255, 0, 0, 0.01) !important;
         }
         
+        /* Free Dictionary 特定样式 */
+        .freedictionary-sense-hover {
+            border: 2px solid red !important;
+            background-color: rgba(255, 0, 0, 0.02) !important;
+            border-radius: 4px !important;
+            margin: 8px 0 !important;
+            padding: 8px !important;
+        }
+        
+        .freedictionary-sense-hover .illustration {
+            display: block !important;
+            margin-top: 8px !important;
+            padding-left: 20px !important;
+            color: #666 !important;
+        }
+        
         /* 确保词典网站的固有样式不会干扰我们的高亮效果 */
-        .cambridge-sense-hover * {
+        .cambridge-sense-hover *,
+        .freedictionary-sense-hover * {
             background-color: transparent !important;
         }
     `;
@@ -187,6 +215,8 @@ function initializeEventListeners(config) {
         if (sense) {
             if (config.name === 'Cambridge Dictionary') {
                 sense.classList.add("cambridge-sense-hover");
+            } else if (config.name === 'Free Dictionary') {
+                sense.classList.add("freedictionary-sense-hover");
             } else {
                 sense.classList.add("sense-hover");
             }
@@ -198,6 +228,8 @@ function initializeEventListeners(config) {
         if (sense) {
             if (config.name === 'Cambridge Dictionary') {
                 sense.classList.remove("cambridge-sense-hover");
+            } else if (config.name === 'Free Dictionary') {
+                sense.classList.remove("freedictionary-sense-hover");
             } else {
                 sense.classList.remove("sense-hover");
             }
@@ -208,7 +240,13 @@ function initializeEventListeners(config) {
         const sense = event.target.closest(config.senseSelector);
         if (!sense) return;
 
-        const {x, y, width, height, debug} = calculateScreenshotArea(sense, config);
+        const {
+            x,
+            y,
+            width,
+            height,
+            debug
+        } = calculateScreenshotArea(sense, config);
 
         const cleanshotUrl = `cleanshot://all-in-one?x=${x}&y=${y}&width=${width}&height=${height}&action=copy`;
 
