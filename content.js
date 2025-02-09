@@ -38,9 +38,9 @@ const DICTIONARY_CONFIGS = {
     },
     'merriam': {
         name: 'Merriam-Webster Dictionary',
-        senseSelector: 'div.sense.has-sn',
+        senseSelector: 'div.sense', // 更新选择器
         definitionSelector: 'span.dtText',
-        exampleSelector: '',
+        exampleSelector: 'span.ex-sent',
         containerPadding: {x: 8, y: 8}
     },
     'urban': {
@@ -148,10 +148,31 @@ function initializeStyles() {
             padding-left: 20px !important;
             color: #666 !important;
         }
+
+        /* Merriam-Webster 词典特定样式 */
+        .merriam-sense-hover {
+            border: 2px solid red !important;
+            background-color: rgba(255, 0, 0, 0.02) !important;
+            border-radius: 4px !important;
+            margin: 8px 0 !important;
+            padding: 8px !important;
+        }
+
+        .merriam-sense-hover .dtText {
+            padding: 4px 8px !important;
+            background-color: rgba(255, 0, 0, 0.03) !important;
+        }
+
+        .merriam-sense-hover .ex-sent {
+            padding: 4px 8px !important;
+            margin-top: 4px !important;
+            background-color: rgba(255, 0, 0, 0.01) !important;
+        }
         
         /* 确保词典网站的固有样式不会干扰我们的高亮效果 */
         .cambridge-sense-hover *,
-        .freedictionary-sense-hover * {
+        .freedictionary-sense-hover *,
+        .merriam-sense-hover * {
             background-color: transparent !important;
         }
     `;
@@ -217,6 +238,8 @@ function initializeEventListeners(config) {
                 sense.classList.add("cambridge-sense-hover");
             } else if (config.name === 'Free Dictionary') {
                 sense.classList.add("freedictionary-sense-hover");
+            } else if (config.name === 'Merriam-Webster Dictionary') {
+                sense.classList.add("merriam-sense-hover");
             } else {
                 sense.classList.add("sense-hover");
             }
@@ -230,6 +253,8 @@ function initializeEventListeners(config) {
                 sense.classList.remove("cambridge-sense-hover");
             } else if (config.name === 'Free Dictionary') {
                 sense.classList.remove("freedictionary-sense-hover");
+            } else if (config.name === 'Merriam-Webster Dictionary') {
+                sense.classList.remove("merriam-sense-hover");
             } else {
                 sense.classList.remove("sense-hover");
             }
